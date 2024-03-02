@@ -1,4 +1,4 @@
-from flask import Flask, request, flash, render_template, redirect
+from flask import Flask, request, session, flash, render_template, redirect
 from flask_debugtoolbar import DebugToolbarExtension
 
 app = Flask(__name__)
@@ -16,9 +16,19 @@ def show_survey():
     responses.clear()
     return render_template('survey.html', survey=survey)
 
+@app.route('/new-survey', methods=['POST'])
+def empty_responses():
+    session['responses'] = []
+    return redirect('/questions/1')
+
 @app.route('/questions/<int:num>')
 def show_question(num):
-    if len(responses) == num-1:
+    # import pdb
+    # pdb.set_trace()
+    print("*******************")
+    print(session['responses'])
+    print("*******************")
+    if len(session['responses']) == num-1:
         try:
             return render_template('question.html', question=survey.questions[num-1], num=num-1)
         except:
@@ -29,7 +39,9 @@ def show_question(num):
 
 @app.route('/answer/<int:num>', methods=["POST"])
 def add_response(num):
+    responses = session['responses']
     responses.append(request.form['response'])
+    session['responses'] = responses
     num += 2
     return redirect(f'/questions/{num}')
 
